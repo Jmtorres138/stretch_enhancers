@@ -1,0 +1,42 @@
+---
+title: "eda_chrom-states.Rmd"
+author: "Jason Torres"
+date: "April 25, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup 
+
+```{r}
+
+"%&%" <- function(a,b) paste0(a,b)
+library("dplyr")
+library("data.table")
+
+pre <- "/Users/jtorres/FUSE/" 
+in.dir <- pre %&% "reference/islet/"
+cur.dir <- in.dir %&% "stretch_enhancers/"
+
+cs.df <- fread(in.dir %&% "Pancreat_islet_15_dense.reformatted_colours.bed",sep="\t")
+cs.df$len <- cs.df$V3 - cs.df$V4
+
+```
+
+
+Write subsetted file with only weak,strong enhancer states (6,7,8,9)
+
+```{r}
+
+sub.df <- filter(cs.df,V4==6 | V4==7 | V4==8 | V4==9) %>% select(one_of("V1","V2","V3","V4"))
+write.table(sub.df,file=cur.dir%&%"Pancreat_islet_15_dense.en-only.bed",col.names=F,row.names=F,
+            sep="\t",quote=F)
+
+
+
+```
+
+
