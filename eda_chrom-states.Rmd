@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Setup 
 
 ```{r}
+# Approach originally proposed by Parker et al. 2013. PNAS 
 
 "%&%" <- function(a,b) paste0(a,b)
 library("dplyr")
@@ -34,9 +35,44 @@ Write subsetted file with only weak,strong enhancer states (6,7,8,9)
 sub.df <- filter(cs.df,V4==6 | V4==7 | V4==8 | V4==9) %>% select(one_of("V1","V2","V3","V4"))
 write.table(sub.df,file=cur.dir%&%"Pancreat_islet_15_dense.en-only.bed",col.names=F,row.names=F,
             sep="\t",quote=F)
+```
+
+Create merged enhancer file 
+
+```{bash}
+sh merge.sh
+```
 
 
+Get distribution 
+
+```{r}
+
+en.df <- fread(cur.dir %&% "islet_merged_enhancers.bed")
+en.df$len <- en.df$V3 - en.df$V2
+hist(en.df$len,breaks=100)
+
+summary(en.df$len/1000)
+qua <- quantile(en.df$len/1000,probs=seq(0,1,0.05))
+q90 <- qua[grepl(pattern="90%",names(qua))] # 4.2 kb 
+
+st.df <- filter(en.df,len>=q90*1000)
+write.table(st.df,file=cur.dir%&%"Pancreat_islet_15_dense.en-only.perc90.bed",col.names=F,row.names=F,
+            sep="\t",quote=F)
 
 ```
 
+
+Make stretch enhancer bed 
+
+```{bash}
+sh merge2.sh 
+```
+
+Evalute stretch enhancer bed 
+
+```{r}
+s.df <- fread(cur.dir %&% "Pancreat_stretch-enhancers.bed")
+s.df$len <- s.df$V3 - s.df$V2
+```
 
